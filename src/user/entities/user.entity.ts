@@ -1,3 +1,4 @@
+import { Role } from 'src/common/enum/role.enum';
 import {
   Entity,
   Column,
@@ -11,7 +12,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column({ unique: true })
@@ -20,7 +21,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'user'] })
+  @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: string;
 
   @CreateDateColumn()

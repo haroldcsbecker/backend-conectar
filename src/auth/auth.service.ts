@@ -1,31 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { User } from 'src/user/entities/user.entity';
+import { AuthRegisterPayloadDto } from './dto/auth-register.dto';
 
-const fakeUsers = [
-  {
-    id: 1,
-    email: 'hcsb20@gmail.com',
-    password: 'pass',
-  },
-  {
-    id: 2,
-    email: 'hcsb20',
-    password: 'pass',
-  },
-];
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
 
-  validateUser({ email, password }: AuthPayloadDto) {
-    const findUser = fakeUsers.find((user) => user.email === email);
-    if (!findUser) {
+  async validateUser({ email, password }: AuthPayloadDto) {
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (!user) {
       return null;
     }
-    if (findUser.password === password) {
-      const { password, ...user } = findUser;
-      return this.jwtService.sign(user);
+
+    const { password: dbPassword, ...loginData } = user;
+    const isPasswordValid = await bcrypt.compare(password, dbPassword);
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid credentials');
     }
+
+    return this.jwtService.sign(loginData);
+  }
+
+  async register({ name, email, password }: AuthRegisterPayloadDto) {
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (user) {
+      throw new BadRequestException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = this.userRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    const { password: pass, ...createdUser } =
+      await this.userRepository.save(newUser);
+
+    return createdUser;
   }
 }

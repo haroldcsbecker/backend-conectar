@@ -6,14 +6,16 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({ usernameField: 'email' });
   }
 
-  validate(email: string, password: string) {
-    console.log('Inside LocalStrategy');
-    const user = this.authService.validateUser({ email, password });
-    if (!user) throw new UnauthorizedException();
+  async validate(email: string, password: string) {
+    const user = await this.authService.validateUser({ email, password });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
     return user;
   }
 }
