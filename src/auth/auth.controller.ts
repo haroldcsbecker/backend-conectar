@@ -1,8 +1,9 @@
-import { Controller, Post, Body, UseGuards, Req, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
 import { Request } from 'express';
-import { JwtGuard } from './guards/jwt.guard';
+// import { JwtGuard } from './guards/jwt.guard';
+import { AuthRegisterPayloadDto } from './dto/auth-register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,9 +15,8 @@ export class AuthController {
     return req.user;
   }
 
-  @Get('profile')
-  @UseGuards(JwtGuard)
-  status(@Req() req: Request) {
-    return req.user;
+  @Post('register')
+  register(@Body() authRegisterPayloadDto: AuthRegisterPayloadDto) {
+    return this.authService.register(authRegisterPayloadDto);
   }
 }
