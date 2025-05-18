@@ -27,6 +27,7 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid credentials');
     }
+    await this.userRepository.update(user.id, { lastLogin: new Date() });
 
     return this.jwtService.sign(loginData);
   }

@@ -24,6 +24,9 @@ export class User {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: string;
 
+  @Column({ default: () => 'NOW()' })
+  lastLogin: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
