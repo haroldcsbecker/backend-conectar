@@ -13,7 +13,7 @@ export class AuthController {
   @UseGuards(LocalGuard)
   @Post('login')
   login(@Req() req: Request) {
-    return req.user;
+    return { token: req.user };
   }
 
   @Post('register')
